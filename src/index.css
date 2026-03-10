@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom Colors */
+  --color-bank-dark: #333333;
+  --color-bank-light: #f0f0f0;
+  --color-bank-yellow: #ffcc00;
+
+  /* Custom Fonts */
+  --font-bank-sans: "Roboto", sans-serif;
+}
+
+
+html {
+  overflow-y: scroll;
+}
