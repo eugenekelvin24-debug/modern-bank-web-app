@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, {useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import {
@@ -9,82 +9,72 @@ import {
   Activity,
   ArrowDownLeft,
   Search,
+  Filter,
   X,
   ChevronLeft,
 } from "lucide-react";
 
-const TransactionsPage = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [monthlyTotals, setMonthlyTotals] = useState({});
+const TransactionList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("All");
+  const [monthlyData, setMonthlyData] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const navigate = useNavigate();
 
-  // Fetch transactions + monthly totals from backend
-  useEffect(() => {
-    const fetchData = async () => {
+  // Process & Filter Data
+  const filteredData = useMemo(() => {
+    return transactions
+      .filter((tx) => {
+        const matchesSearch =
+          tx.entity.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tx.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const date = new Date(tx.date);
+        const monthYear = date.toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        });
+        const matchesMonth =
+          selectedMonth === "All" || monthYear === selectedMonth;
+
+        return matchesSearch && matchesMonth;
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [transactions, searchTerm, selectedMonth]);
+
+useEffect(() => {
+    const fetchMonthlyTotals = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/analytics/");
-        if (!res.ok) throw new Error("Failed to fetch data");
-        const data = await res.json();
-        setTransactions(data.transactions || []);
-        setMonthlyTotals(data.monthly_totals || {});
+        const response = await fetch('http://127.0.0.1:8000/monthly-totals/');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch financial data');
+        }
+
+        const data = await response.json();
+
+        // Transform {"2026-03": 4340.53} into [{ month: "2026-03", total: 4340.53 }]
+        const formattedArray = Object.entries(data)
+          .map(([month, total]) => ({
+            month,
+            total,
+          }))
+          // Optional: Sort by date descending
+          .sort((a, b) => b.month.localeCompare(a.month));
+
+        setMonthlyData(formattedArray);
       } catch (err) {
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
+
+    fetchMonthlyTotals();
   }, []);
 
-  // month filter pills
-  const allMonths = useMemo(() => {
-    const months = Object.keys(monthlyTotals)
-      .map((key) => {
-        const [year, month] = key.split("-");
-        // CDate: YYYY-MM-01 format
-        const date = new Date(`${year}-${month}-01`);
-        return date.toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        });
-      })
-      .sort((a, b) => new Date(b) - new Date(a));
-
-    return ["All", ...months];
-  }, [monthlyTotals]);
-
-  // Filter and group transactions by month
-  const groupedTransactions = useMemo(() => {
-    const filtered = transactions.filter((tx) => {
-      const matchesSearch =
-        tx.entity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tx.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const date = new Date(tx.date);
-      const month = date.toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      const matchesMonth = selectedMonth === "All" || month === selectedMonth;
-      return matchesSearch && matchesMonth;
-    });
-
-    return filtered.reduce((acc, tx) => {
-      const date = new Date(tx.date);
-      const month = date.toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      if (!acc[month]) acc[month] = { items: [], total: 0 };
-      acc[month].items.push(tx);
-      acc[month].total += tx.amount;
-      return acc;
-    }, {});
-  }, [transactions, searchTerm, selectedMonth]);
+  if (isLoading) return <div className="p-8 text-center text-slate-500 text-sm">Loading ledger...</div>;
+  if (error) return <div className="p-8 text-center text-red-500 text-sm">Error: {error}</div>;
 
   const getIcon = (category) => {
     const icons = {
@@ -97,40 +87,27 @@ const TransactionsPage = () => {
     return icons[category?.toLowerCase()] || <Activity size={18} />;
   };
 
-  if (isLoading)
-    return (
-      <div className="p-8 text-center text-slate-500 text-sm">
-        Loading ledger...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="p-8 text-center text-red-500 text-sm">Error: {error}</div>
-    );
-
   return (
     <div className="relative">
-      {/* Header */}
-      <div className="mb-5 flex items-center justify-between sticky top-0 z-30 md:top-[75px] bg-slate-900 p-4">
+      <div className="mb-5 items-center justify-between flex sticky top-0 md:top-[75px]  z-30">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 text-slate-400 hover:text-white active:scale-90"
+          className="p-2 -ml-2 text-slate-400 hover:text-white transition-all active:scale-90"
         >
           <ChevronLeft size={22} />
         </button>
         <h1 className="text-lg md:text-xl font-bold text-white tracking-tight">
           Transactions
         </h1>
-        <Link
-          to="/analys"
-          className="text-emerald-400 text-xs font-bold tracking-wider hover:opacity-80"
-        >
+        <Link 
+        to="/analys"
+        className="text-emerald-400 text-xs font-bold tracking-wider hover:opacity-80">
           Analys
         </Link>
       </div>
 
       <div className="space-y-7 max-w-2xl mx-auto pb-10 p-4">
-        {/* Search Bar */}
+        {/* SEARCH BAR */}
         <div className="relative group">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors"
@@ -153,8 +130,8 @@ const TransactionsPage = () => {
           )}
         </div>
 
-        {/* Month Filter Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        {/* MONTH FILTER PILLS */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {allMonths.map((month) => (
             <button
               key={month}
@@ -170,26 +147,22 @@ const TransactionsPage = () => {
           ))}
         </div>
 
-        {/* Transaction Groups */}
+        {/* TRANSACTION GROUPS */}
         <div className="space-y-6 w-full">
           {Object.entries(groupedTransactions).map(([month, data]) => (
             <div key={month} className="space-y-4">
-              {/* Month Header */}
-              <div className="flex justify-between items-end px-1 sticky top-0 py-2 z-10 bg-slate-900">
+              <div className="flex justify-between items-end px-1 sticky top-0 py-2 z-10">
                 <h3 className="text-[12px] font-black text-slate-300/80 tracking-[0.2em]">
                   {month}
                 </h3>
                 <p
-                  className={`text-xs font-bold ${
-                    data.total >= 0 ? "text-emerald-400" : "text-slate-300"
-                  }`}
+                  className={`text-xs font-bold ${data.total >= 0 ? "text-emerald-400" : "text-slate-300"}`}
                 >
-                  Net: {data.total >= 0 ? "+" : ""}
+                  Net: {data.total >= 0 ? "+" : ""}$
                   {data.total.toLocaleString()}
                 </p>
               </div>
 
-              {/* Transactions */}
               <div className="space-y-2">
                 {data.items.map((tx) => (
                   <div
@@ -198,11 +171,7 @@ const TransactionsPage = () => {
                   >
                     <div className="flex items-center gap-4">
                       <div
-                        className={`h-11 w-11 rounded-full flex items-center justify-center ${
-                          tx.type === "credit"
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-slate-800 text-slate-400"
-                        }`}
+                        className={`h-11 w-11 rounded-full flex items-center justify-center ${tx.type === "credit" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-400"}`}
                       >
                         {getIcon(tx.category)}
                       </div>
@@ -217,9 +186,7 @@ const TransactionsPage = () => {
                     </div>
                     <div className="text-right">
                       <p
-                        className={`text-sm font-black ${
-                          tx.amount > 0 ? "text-emerald-400" : "text-white"
-                        }`}
+                        className={`text-sm font-black ${tx.amount > 0 ? "text-emerald-400" : "text-white"}`}
                       >
                         {tx.amount > 0
                           ? `+ $${tx.amount}`
@@ -237,4 +204,12 @@ const TransactionsPage = () => {
   );
 };
 
-export default TransactionsPage;
+const Transactions = () => {
+  return (
+    <div>
+      <TransactionList transactions={MOCK_DATA.transactions} />
+    </div>
+  );
+};
+
+export default Transactions;

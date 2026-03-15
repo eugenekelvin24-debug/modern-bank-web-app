@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   CreditCard,
@@ -8,56 +9,73 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import AccountsCard from "./AccountsCard";
 
 const Wallet = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   const navigate = useNavigate();
 
+  // Fetch accounts from backend
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/accounts/");
+        if (!res.ok) throw new Error("Failed to fetch accounts");
+        const data = await res.json();
+        console.log("Fetched accounts:", data);
+        setAccounts(data.admin?.accounts || []); // <-- fixed here
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAccounts();
+  }, []);
+
   return (
-    //Navigation
     <div className="relative">
-    <div className="mb-5 items-center justify-between flex sticky top-0 md:top-[75px] z-30 ">
-  {/* LEFT: Back Button */}
-  <div className="flex z-40">
-    <button
-      onClick={() => navigate(-1)}
-      className="p-2 -ml-2 text-slate-400 hover:text-white transition-all active:scale-90"
-    >
-      <ChevronLeft size={22} />
-    </button>
-  </div>
+      {/* Header */}
+      <div className="mb-5 flex items-center justify-between sticky top-0 md:top-[75px] z-30 bg-slate-900 p-4">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 text-slate-400 hover:text-white active:scale-90"
+        >
+          <ChevronLeft size={22} />
+        </button>
 
-  {/* CENTER: The Title (Now Perfectly Centered) */}
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-    <h1 className="text-lg md:text-xl font-bold text-white tracking-tight pointer-events-auto">
-      Wallets
-    </h1>
-  </div>
-
-  {/* RIGHT: Plus Button */}
-  <div className="flex z-40">
-    <button className="h-6 w-6 bg-indigo-500 text-white rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-90 transition-all">
-      <Plus size={16} />
-    </button>
-  </div>
-</div>
-
-      <div className="space-y-4 max-w-2xl mx-auto pb-10 px-4 p-4">
-        {/* HEADER */}
-
-        <p className="text-xs text-slate-300/80 font-bold tracking-widest">
-          Manage your cards
-        </p>
-
-        <div className="relative py-4 flex items-center">
-          <div className="w-full">
-            <AccountsCard />
-          </div>
+        {/* Centered Title */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <h1 className="text-lg md:text-xl font-bold text-white tracking-tight pointer-events-auto">
+            Wallets
+          </h1>
         </div>
 
-        {/* QUICK ACTIONS GRID */}
+        {/* Plus Button */}
+        <button className="h-6 w-6 bg-indigo-500 text-white rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-90 transition-all">
+          <Plus size={16} />
+        </button>
+      </div>
+
+      <div className="space-y-4 max-w-2xl mx-auto pb-10 px-4">
+        {/* Loading/Error States */}
+        {isLoading && (
+          <div className="text-center text-slate-400 py-12">
+            Loading accounts...
+          </div>
+        )}
+        {error && (
+          <div className="text-center text-red-500 py-12">Error: {error}</div>
+        )}
+
+        {/* Accounts Swiper */}
+        {!isLoading && !error && <AccountsCard accounts={accounts} />}
+
+        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mt-[-20px]">
           <div className="p-4 bg-slate-800/40 border border-slate-800 rounded-2xl space-y-3 hover:bg-slate-800 transition-colors cursor-pointer group">
             <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all">
@@ -73,7 +91,7 @@ const Wallet = () => {
           </div>
         </div>
 
-        {/* SETTINGS LIST */}
+        {/* Security & Limits */}
         <div className="space-y-4">
           <h3 className="text-xs text-slate-300/80 font-bold tracking-widest px-1 space-y-2">
             Security & Limits
