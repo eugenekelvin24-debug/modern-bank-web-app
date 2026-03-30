@@ -1,0 +1,32 @@
+[
+  {
+    "id": "acc_1",
+    "user_id": 1,
+    "label": "Main Savings",
+    "type": "Savings",
+    "balance": 24500.0,
+    "trend": "+2.5%",
+    "currency": "$",
+    "accountNumber": "**** 8829"
+  },
+  {
+    "id": "acc_2",
+    "user_id": 1,
+    "label": "Checking Account",
+    "type": "Checking",
+    "balance": 1200.0,
+    "trend": "-1.2%",
+    "currency": "$",
+    "accountNumber": "**** 1102"
+  },
+  {
+    "id": "acc_3",
+    "user_id": 1,
+    "label": "Investment Portfolio",
+    "type": "Investment",
+    "balance": 8900.0,
+    "trend": "+5.8%",
+    "currency": "$",
+    "accountNumber": "**** 4432"
+  }
+]
