@@ -11,8 +11,9 @@ import { Link } from "react-router-dom";
 import Navigation from "../components/Navigation";
 import TransferSkeleton from "../Skeletons/TransferSkeleton";
 import AdSlider from "../components/AdSlider";
+import api from "../api/api";
 
-const TransferPage = ({ userToken }) => {
+const TransferPage = () => {
   const [step, setStep] = useState(1);
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
@@ -105,14 +106,15 @@ const TransferPage = ({ userToken }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/transfer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({ accountNumber, amount: parseFloat(amount) }),
+      const res = await api.post("/transfer", {
+        accountNumber,
+        amount: parseFloat(amount),
       });
+
+      if (res.status === 200 || res.status === 201) {
+        setStep(3);
+        setAmount("");
+      }
       const data = await res.json();
       if (res.ok) {
         setStep(3);
@@ -125,7 +127,7 @@ const TransferPage = ({ userToken }) => {
     }
   };
 
-if (initialLoading || (recents.length === 0 && step === 1)) {
+  if (initialLoading || (recents.length === 0 && step === 1)) {
     return (
       <div className="relative min-h-screen bg-slate-900">
         <Nav />
@@ -134,7 +136,7 @@ if (initialLoading || (recents.length === 0 && step === 1)) {
         </div>
       </div>
     );
-}
+  }
 
   return (
     <div className="relative">
