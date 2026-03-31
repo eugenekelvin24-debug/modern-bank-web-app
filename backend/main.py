@@ -9,13 +9,28 @@ import routes.analytics
 import routes.overview
 import routes.user
 from auth.auth_guard import get_current_user
+import os
+import json
 
 app = FastAPI()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+USERS_PATH = os.path.join(BASE_DIR, "Data", "user.json")
+
+TRANSACTIONS_PATH = os.path.join(BASE_DIR, "Data", "transactions.json")
+
+ACCOUNTS_PATH = os.path.join(BASE_DIR, "Data", "accounts.json")
+
+CARDINFO_PATH = os.path.join(BASE_DIR, "Data", "cardinfo.json")
+
+CREDENTIALS_PATH = os.path.join(BASE_DIR, "Data", "credentials.json")
 
 origins = [
     "http://localhost:5173",  
     "http://127.0.0.1:5173",
-    "http://localhost:3000",  
+    "http://localhost:3000",
+    "https://trust-bank-ashy.vercel.app"  
 ] 
 
 app.add_middleware(
