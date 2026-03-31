@@ -114,14 +114,12 @@ const TransferPage = () => {
       if (res.status === 200 || res.status === 201) {
         setStep(3);
         setAmount("");
+      } else {
+        setError(res.data?.error || "Transfer failed");
       }
-      const data = await res.json();
-      if (res.ok) {
-        setStep(3);
-        setAmount("");
-      } else setError(data.error || "Transfer failed");
-    } catch {
-      setError("Network error");
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || "Network error");
     } finally {
       setLoading(false);
     }
