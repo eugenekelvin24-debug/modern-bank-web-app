@@ -11,7 +11,24 @@ import { Link } from "react-router-dom";
 import Navigation from "../components/Navigation";
 import TransferSkeleton from "../Skeletons/TransferSkeleton";
 import AdSlider from "../components/AdSlider";
-import api from "../api/api";
+
+const Nav = () => {
+  return (
+    <div className="sticky top-0 md:top-18.75 z-20">
+      <Navigation
+        PageName={"Transfer to Bank"}
+        PageLink={
+          <Link
+            className="text-emerald-400 text-xs font-bold tracking-wider hover:opacity-80"
+            to="/transactions"
+          >
+            History
+          </Link>
+        }
+      />
+    </div>
+  );
+};
 
 const TransferPage = () => {
   const [step, setStep] = useState(1);
@@ -37,8 +54,12 @@ const TransferPage = () => {
       setInitialLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchContacts("");
+    const loadData = async () => {
+      await fetchContacts("");
+    };
+    loadData();
   }, []);
 
   const handleCloseSearch = () => {
@@ -78,51 +99,20 @@ const TransferPage = () => {
     };
   }, []);
 
-  const Nav = () => {
-    return (
-      <div className="sticky top-0 md:top-18.75 z-20">
-        <Navigation
-          PageName={"Transfer to Bank"}
-          PageLink={
-            <Link
-              className="text-emerald-400 text-xs font-bold tracking-wider hover:opacity-80"
-              to="/transactions"
-            >
-              History
-            </Link>
-          }
-        />
-      </div>
-    );
-  };
-
   const visibleRecents = showAll ? recents.slice(0, 10) : recents.slice(0, 5);
 
-  const handleConfirmTransfer = async () => {
-    if (!accountNumber || !amount) {
-      setError("Enter account number and amount");
+  const handleConfirmTransfer = () => {
+    if (!amount || !accountNumber) {
+      setError("Please enter all details");
       return;
     }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.post("/transfer", {
-        accountNumber,
-        amount: parseFloat(amount),
-      });
 
-      if (res.status === 200 || res.status === 201) {
-        setStep(3);
-        setAmount("");
-      } else {
-        setError(res.data?.error || "Transfer failed");
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || "Network error");
-    } finally {
+    setLoading(true);
+
+    setTimeout(() => {
       setLoading(false);
-    }
+      setStep(3); 
+    }, 1000);
   };
 
   if (initialLoading || (recents.length === 0 && step === 1)) {
