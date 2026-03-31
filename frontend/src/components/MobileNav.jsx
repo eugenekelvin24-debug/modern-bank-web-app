@@ -19,7 +19,7 @@ const MobileNav = () => {
   ];
   
   return ( 
-    <nav className="fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-lg border-t border-white/5 px-2 pb-safe-area pt-3 flex justify-around items-end z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-lg border-t border-white/5 px-2 pb-safe-area pt-2 flex justify-around items-end z-50 md:hidden">
       {navLinks.map((item) => {
         const isActive = location.pathname === item.path;
         
