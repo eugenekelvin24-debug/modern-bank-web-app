@@ -32,7 +32,7 @@ const Accounts = () => {
           setAccounts(Array.isArray(res.data) ? res.data : []);
         }
       } catch {
-        // No console.log or setError here—Interceptor handles the Toast!
+        // 
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -45,8 +45,6 @@ const Accounts = () => {
     document.title = isLoading ? "Trust Bank | Loading..." : "Trust Bank | Wallet";
   }, [isLoading]);
 
-  // Premium Fallback: Show Skeleton if loading OR if data failed to arrive
-  // This keeps the "Indigo Background" and Nav visible at all times.
   if (isLoading || accounts.length === 0) {
     return (
       <div className="min-h-screen bg-slate-900">

@@ -1,9 +1,9 @@
 import axios from "axios";
 import { isTokenExpired } from "../utils/auth";
-import toast from "react-hot-toast"; // Import toast
+import toast from "react-hot-toast"; 
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000",
+  baseURL: "https://trust-bank-api-mp7p.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
