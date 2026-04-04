@@ -112,6 +112,10 @@ Built with love and hardwork by Kelvin Eugene.
 Explore the dashboard with:
 * **Username:** admin@bank.com
 * **Password:** 1234
+> [!IMPORTANT]
+> The backend is hosted on a Render free tier account.
+  The server may take a moment to "wake up" during the first login or request.
+  If it fails initially, please refresh or wait a few seconds and try again. Thank you for your patience! 
 
 ## 🏗️ Architecture Flow
 1. **Frontend:** React captures user credentials and sends a POST request to `/auth/login`.
